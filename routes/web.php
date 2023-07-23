@@ -22,6 +22,10 @@ Route::get('/loan-input-form', [LoanController::class, 'showLoanInputForm'])->na
 Route::post('/calculate-amortization-schedule', [LoanController::class, 'calculateAmortizationSchedule'])
     ->name('calculate.amortization.schedule');
 
+Route::post('/calculate-extra-repayment-schedule', [LoanController::class, 'calculateAmortizationSchedule'])
+    ->name('calculate.extra.repayment.schedule');
+
+
 Route::get('/amortization-schedule', [LoanController::class, 'showAmortizationSchedule'])
     ->name('amortization.schedule');
 

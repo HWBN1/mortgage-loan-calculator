@@ -83,11 +83,12 @@ class LoanController extends Controller
 
     public function generateExtraRepaymentSchedule(Request $request)
     {
+        // Validate the input data
         $validator = Validator::make($request->all(), [
             'loan_amount' => 'required|numeric|min:1',
             'annual_interest_rate' => 'required|numeric|min:0',
             'loan_term' => 'required|numeric|min:1',
-            'monthly_fixed_extra_payment' => 'optional|numeric|min:1'
+            'monthly_fixed_extra_payment' => 'nullable|numeric|min:1'
         ]);
 
         if ($validator->fails()) {
@@ -138,23 +139,13 @@ class LoanController extends Controller
             $remainingLoanTerm--;
         }
 
-        // Store the extra repayment schedule data in the database
-        ExtraRepaymentSchedule::insert($extraRepaymentSchedule);
+        // Store the extra repayment schedule data in the session
+        session()->put('extraRepaymentSchedule', $extraRepaymentSchedule);
 
-        // Calculate the effective interest rate after each extra repayment
-        foreach ($extraRepaymentSchedule as $key => $entry) {
-            $remainingBalance = $entry['ending_balance_after_extra_repayment'];
-            $effectiveInterestRate = ($monthlyInterestRate * 12) / ($remainingBalance / $loanAmount) * 100;
-
-            $extraRepaymentSchedule[$key]['effective_interest_rate'] = $effectiveInterestRate;
-        }
-
-        // Update the extra repayment schedule data with the effective interest rate
-        ExtraRepaymentSchedule::upsert($extraRepaymentSchedule, ['id'], ['effective_interest_rate']);
-
-
-        return response()->json(['extra_repayment_schedule' => $extraRepaymentSchedule], 200);
+        // Redirect to the extra repayment schedule view
+        return redirect()->route('show.extra.repayment.schedule');
     }
+
 
     public function showLoanInputForm()
     {
@@ -168,7 +159,6 @@ class LoanController extends Controller
 
         return view('amortization_schedule', ['amortizationSchedule' => $amortizationSchedule]);
     }
-
 
     public function calculateAmortizationSchedule(Request $request)
     {
@@ -186,9 +176,9 @@ class LoanController extends Controller
         // Assuming you have a method to generate the amortization schedule (like the previous example)
         $response = $this->generateAmortizationSchedule($request);
 
-         // Decode the JSON response to access the amortization schedule array
-         $data = $response->getData(true);
-         $amortizationSchedule = $data['amortization_schedule'];
+        // Decode the JSON response to access the amortization schedule array
+        $data = $response->getData(true);
+        $amortizationSchedule = $data['amortization_schedule'];
 
         // Calculate the effective interest rate after each extra repayment and store it in the session
         $effectiveInterestRates = [];
@@ -214,5 +204,30 @@ class LoanController extends Controller
         return redirect()->route('amortization.schedule');
     }
 
+    public function showExtraRepaymentSchedule()
+    {
+        return view('extra_repayment_schedule');
+    }
+
+
+    public function calculateExtraRepaymentSchedule(Request $request)
+    {
+        // Validate the input data (similar to the previous method)
+        $validator = Validator::make($request->all(), [
+            'loan_amount' => 'required|numeric|min:1',
+            'annual_interest_rate' => 'required|numeric|min:0',
+            'loan_term' => 'required|integer|min:1',
+            'monthly_fixed_extra_payment' => 'nullable|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->route('loan.input.form')->withErrors($validator)->withInput();
+        }
+
+        // Assuming you have a method to generate the extra repayment schedule (like the previous example)
+        $this->generateExtraRepaymentSchedule($request);
+
+        return redirect()->route('show.extra.repayment.schedule');
+    }
 
 }
