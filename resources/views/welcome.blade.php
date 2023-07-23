@@ -17,7 +17,7 @@
         </style>
     </head>
     <body class="antialiased">
-        {{-- @include('resume') --}}
+        @include('amortization_schedule')
         <div class="bg-black-500">
 
             
