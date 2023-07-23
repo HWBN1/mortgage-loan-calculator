@@ -186,9 +186,26 @@ class LoanController extends Controller
         // Assuming you have a method to generate the amortization schedule (like the previous example)
         $response = $this->generateAmortizationSchedule($request);
 
-        // Decode the JSON response to access the amortization schedule array
-        $data = $response->getData(true);
-        $amortizationSchedule = $data['amortization_schedule'];
+         // Decode the JSON response to access the amortization schedule array
+         $data = $response->getData(true);
+         $amortizationSchedule = $data['amortization_schedule'];
+
+        // Calculate the effective interest rate after each extra repayment and store it in the session
+        $effectiveInterestRates = [];
+        $loanAmount = $request->input('loan_amount');
+        $monthlyInterestRate = ($request->input('annual_interest_rate') / 12) / 100;
+
+        foreach ($amortizationSchedule as $entry) {
+            $remainingBalance = $entry['ending_balance'];
+            $effectiveInterestRate = ($monthlyInterestRate * 12) / ($remainingBalance / $loanAmount) * 100;
+            $effectiveInterestRates[] = $effectiveInterestRate;
+        }
+
+        // Store the loan setup details and effective interest rates in the session
+        session()->put('loan_amount', $request->input('loan_amount'));
+        session()->put('annual_interest_rate', $request->input('annual_interest_rate'));
+        session()->put('loan_term', $request->input('loan_term'));
+        session()->put('effective_interest_rate', $effectiveInterestRates);
 
         // Store the amortization schedule data in the session
         session()->put('amortizationSchedule', $amortizationSchedule);
@@ -196,5 +213,6 @@ class LoanController extends Controller
         // Redirect to the amortization schedule view
         return redirect()->route('amortization.schedule');
     }
+
 
 }
