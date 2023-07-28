@@ -20,7 +20,7 @@
 
                 <div>
                     <label for="annual_interest_rate" class="block text-sm font-medium text-gray-700">Annual Interest Rate (%):</label>
-                    <input type="number" name="annual_interest_rate" class="w-full h-10 px-4 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base text-gray-700" required>
+                    <input type="number" step="0.01" name="annual_interest_rate" class="w-full h-10 px-4 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base text-gray-700" required>
 
                 </div>
 
