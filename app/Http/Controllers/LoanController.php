@@ -320,7 +320,8 @@ class LoanController extends Controller
             'loanAmount' => $request->input('loan_amount'),
             'annualInterestRate' => $request->input('annual_interest_rate'),
             'loanTerm' => $request->input('loan_term'),
-            'effectiveInterestRate' => $effectiveInterestRate
+            'effectiveInterestRate' => $effectiveInterestRate,
+            'extraPayment' => $request->input('monthly_fixed_extra_payment'),
         ]);
     }
 }
