@@ -5,11 +5,11 @@ This is a web application built with Laravel that allows users to calculate mort
 
 ## Screenshots
 
-![Loan Input Form](screenshots/Loan Input Form.png)
+![Loan Input Form](screenshots/Loan_Input_Form.png)
 
-![Amortization Schedule](screenshots/Amortization Schedule.png)
+![Amortization Schedule](screenshots/Amortization_Schedule.png)
 
-![Recalculated Schedule](screenshots/Recalculated Schedule.png)
+![Recalculated Schedule](screenshots/Recalculated_Schedule.png)
 
 ## Prerequisites
 
