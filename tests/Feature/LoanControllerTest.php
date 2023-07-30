@@ -9,39 +9,83 @@ use Tests\TestCase;
 
 class LoanControllerTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     */
-    public function test_example(): void
-    {
-        $response = $this->get('/');
-
-        $response->assertStatus(200);
-    }
-
     use RefreshDatabase;
 
-    public function testShowAmortizationAndExtraRepaymentSchedule()
+    /**
+     * Test the calculate monthly payment endpoint.
+     *
+     * @return void
+     */
+    public function testCalculateMonthlyPayment()
     {
-        $requestData = [
-            'loan_amount' => 100000,
+        $response = $this->json('POST', '/api/calculate-monthly-payment', [
+            'loan_amount' => 200000,
             'annual_interest_rate' => 5,
-            'loan_term' => 5,
-            'monthly_fixed_extra_payment' => 200,
-        ];
+            'loan_term' => 30,
+        ]);
 
-        // Make a POST request to the loan.schedule route with the sample data
-        $response = $this->post(route('loan.schedule'), $requestData);
+        $response->assertStatus(200)
+            ->assertJson([
+                'monthly_payment' => '1,073.64',
+            ]);
+    }
 
-        // Assert that the response has a successful status code
-        $response->assertStatus(200);
+    /**
+     * Test the generate amortization schedule endpoint.
+     *
+     * @return void
+     */
+    public function testGenerateAmortizationSchedule()
+    {
+        $response = $this->json('POST', '/api/generate-amortization-schedule', [
+            'loan_amount' => 200000,
+            'annual_interest_rate' => 5,
+            'loan_term' => 30,
+        ]);
 
-        // Assert that the response contains the expected data in the view
-        $response->assertSee('Amortization Schedule');
-        $response->assertSee('Recalculated Schedule');
-        $response->assertSee('Loan Amount: $100,000');
-        $response->assertSee('Annual Interest Rate: 5%');
-        $response->assertSee('Loan Term: 5');
-        $response->assertSee('Effective Interest Rate: 4.63% (after extra repayments)');
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'amortization_schedule' => [
+                    '*' => [
+                        'month_number',
+                        'starting_balance',
+                        'monthly_payment',
+                        'principal_component',
+                        'interest_component',
+                        'ending_balance',
+                    ],
+                ],
+            ]);
+    }
+
+    /**
+     * Test the generate extra repayment schedule endpoint.
+     *
+     * @return void
+     */
+    public function testGenerateExtraRepaymentSchedule()
+    {
+        $response = $this->json('POST', '/api/generate-extra-repayment-schedule', [
+            'loan_amount' => 200000,
+            'annual_interest_rate' => 5,
+            'loan_term' => 30,
+            'monthly_fixed_extra_payment' => 100,
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'extra_repayment_schedule' => [
+                    '*' => [
+                        'month_number',
+                        'starting_balance',
+                        'monthly_payment',
+                        'principal_component',
+                        'interest_component',
+                        'extra_repayment_made',
+                        'ending_balance_after_extra_repayment',
+                        'remaining_loan_term_after_extra_repayment',
+                    ],
+                ],
+            ]);
     }
 }

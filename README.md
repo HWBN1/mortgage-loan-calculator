@@ -1,66 +1,100 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Mortgage Loan Calculator Application
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This is a web application built with Laravel that allows users to calculate mortgage loan details, generate amortization schedules, and simulate extra repayments.
 
-## About Laravel
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Screenshots
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+![Loan Input Form](screenshots/Loan Input Form.png)
+![Amortization Schedule](screenshots/Amortization Schedule.png)
+![Recalculated Schedule](screenshots/Recalculated Schedule.png)
+## Prerequisites
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Make sure you have the following installed on your machine:
 
-## Learning Laravel
+- Docker ([Install Docker](https://docs.docker.com/get-docker/))
+- Docker Compose ([Install Docker Compose](https://docs.docker.com/compose/install/))
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Getting Started
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+1. Clone the repository:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+git clone https://github.com/your-username/mortgage-loan-calculator.git
+cd mortgage-loan-calculator
+``` 
 
-## Laravel Sponsors
+2.  Build and start the Docker containers:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+`docker-compose up -d` 
 
-### Premium Partners
+3.  Install Composer dependencies:
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+`docker-compose exec app composer install` 
 
-## Contributing
+4.  Create the .env file:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+`cp .env.example .env` 
 
-## Code of Conduct
+5.  Generate the Laravel application key:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+`docker-compose exec app php artisan key:generate` 
 
-## Security Vulnerabilities
+6.  Run the database migrations:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+`docker-compose exec app php artisan migrate` 
+
+## Usage
+
+To access the application, open your web browser and go to [http://localhost:8000](http://localhost:8000/).
+
+## API Endpoints
+
+The application provides the following API endpoints for loan calculations:
+
+### Calculate Monthly Payment
+
+Endpoint: POST /api/calculate-monthly-payment
+
+Parameters:
+
+-   loan_amount (numeric, required): The loan amount (principal).
+-   annual_interest_rate (numeric, required): The annual interest rate (as a percentage).
+-   loan_term (numeric, required): The loan term in years.
+
+### Generate Amortization Schedule
+
+Endpoint: POST /api/generate-amortization-schedule
+
+Parameters:
+
+-   loan_amount (numeric, required): The loan amount (principal).
+-   annual_interest_rate (numeric, required): The annual interest rate (as a percentage).
+-   loan_term (numeric, required): The loan term in years.
+
+### Generate Extra Repayment Schedule
+
+Endpoint: POST /api/generate-extra-repayment-schedule
+
+Parameters:
+
+-   loan_amount (numeric, required): The loan amount (principal).
+-   annual_interest_rate (numeric, required): The annual interest rate (as a percentage).
+-   loan_term (numeric, required): The loan term in years.
+-   monthly_fixed_extra_payment (numeric, optional): Monthly fixed extra payment amount (default: 0).
+
+## Running Unit Tests
+
+To run the unit tests, use the following command:
+
+`docker-compose exec app php artisan test` 
+
+## Stopping the Application
+
+To stop and remove the Docker containers, run the following command:
+
+`docker-compose down` 
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is open-source and available under the MIT License.

@@ -35,7 +35,7 @@ class LoanController extends Controller
             $request->input('loan_term')
         );
 
-        return response()->json(['monthly_payment' => $monthlyPayment], 200);
+        return response()->json(['monthly_payment' => number_format($monthlyPayment, 2)], 200);
     }
 
     /**
