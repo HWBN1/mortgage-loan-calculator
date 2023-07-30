@@ -2,6 +2,12 @@
 
 This is a web application built with Laravel that allows users to calculate mortgage loan details, generate amortization schedules, and simulate extra repayments.
 
+
+## Screenshots
+
+![Loan Input Form](screenshots/Loan Input Form.png)
+![Amortization Schedule](screenshots/Amortization Schedule.png)
+![Recalculated Schedule](screenshots/Recalculated Schedule.png)
 ## Prerequisites
 
 Make sure you have the following installed on your machine:
