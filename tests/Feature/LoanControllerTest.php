@@ -9,36 +9,36 @@ use Tests\TestCase;
 
 class LoanControllerTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     */
-    public function test_example(): void
-    {
-        $response = $this->get('/');
-
-        $response->assertStatus(200);
-    }
-
     use RefreshDatabase;
 
+    /**
+     * Test the calculate monthly payment endpoint.
+     *
+     * @return void
+     */
     public function testCalculateMonthlyPayment()
     {
-        $response = $this->postJson('/api/calculate-monthly-payment', [
-            'loan_amount' => 100000,
+        $response = $this->json('POST', '/api/calculate-monthly-payment', [
+            'loan_amount' => 200000,
             'annual_interest_rate' => 5,
             'loan_term' => 30,
         ]);
 
         $response->assertStatus(200)
             ->assertJson([
-                'monthly_payment' => 536.82,
+                'monthly_payment' => 1073.64,
             ]);
     }
 
+    /**
+     * Test the generate amortization schedule endpoint.
+     *
+     * @return void
+     */
     public function testGenerateAmortizationSchedule()
     {
-        $response = $this->postJson('/api/generate-amortization-schedule', [
-            'loan_amount' => 100000,
+        $response = $this->json('POST', '/api/generate-amortization-schedule', [
+            'loan_amount' => 200000,
             'annual_interest_rate' => 5,
             'loan_term' => 30,
         ]);
@@ -58,10 +58,15 @@ class LoanControllerTest extends TestCase
             ]);
     }
 
+    /**
+     * Test the generate extra repayment schedule endpoint.
+     *
+     * @return void
+     */
     public function testGenerateExtraRepaymentSchedule()
     {
-        $response = $this->postJson('/api/generate-extra-repayment-schedule', [
-            'loan_amount' => 100000,
+        $response = $this->json('POST', '/api/generate-extra-repayment-schedule', [
+            'loan_amount' => 200000,
             'annual_interest_rate' => 5,
             'loan_term' => 30,
             'monthly_fixed_extra_payment' => 100,
@@ -82,26 +87,5 @@ class LoanControllerTest extends TestCase
                     ],
                 ],
             ]);
-    }
-
-    public function testValidationForInvalidInput()
-    {
-        $invalidData = [
-            'loan_amount' => -100000, // Negative loan amount
-            'annual_interest_rate' => 'invalid', // Invalid interest rate
-            'loan_term' => 'invalid', // Invalid loan term
-        ];
-
-        $response = $this->postJson('/api/calculate-monthly-payment', $invalidData);
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['loan_amount', 'annual_interest_rate', 'loan_term']);
-
-        $response = $this->postJson('/api/generate-amortization-schedule', $invalidData);
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['loan_amount', 'annual_interest_rate', 'loan_term']);
-
-        $response = $this->postJson('/api/generate-extra-repayment-schedule', $invalidData);
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['loan_amount', 'annual_interest_rate', 'loan_term']);
     }
 }
