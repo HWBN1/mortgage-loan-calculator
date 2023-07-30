@@ -26,7 +26,7 @@ class LoanControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'monthly_payment' => 1073.64,
+                'monthly_payment' => '1,073.64',
             ]);
     }
 
