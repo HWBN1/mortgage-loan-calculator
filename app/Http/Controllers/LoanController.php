@@ -11,6 +11,12 @@ class LoanController extends Controller
     public const AMORTIZATION_TABLE = 'loan_amortization_schedule';
     public const EXTRA_REPAYMENT_TABLE = 'extra_repayment_schedule';
 
+    /**
+     * Calculate the monthly payment for a mortgage loan.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function calculateMonthlyPayment(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -32,6 +38,14 @@ class LoanController extends Controller
         return response()->json(['monthly_payment' => $monthlyPayment], 200);
     }
 
+    /**
+     * Calculate the monthly payment amount for a mortgage loan.
+     *
+     * @param  float  $loanAmount
+     * @param  float  $annualInterestRate
+     * @param  int  $loanTerm
+     * @return float
+     */
     private function calculateMonthlyPaymentAmount($loanAmount, $annualInterestRate, $loanTerm)
     {
         $monthlyInterestRate = ($annualInterestRate / 12) / 100;
@@ -39,6 +53,12 @@ class LoanController extends Controller
         return ($loanAmount * $monthlyInterestRate) / (1 - pow(1 + $monthlyInterestRate, -$numberOfMonths));
     }
 
+    /**
+     * Generate the amortization schedule for a mortgage loan.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function generateAmortizationSchedule(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -69,6 +89,15 @@ class LoanController extends Controller
         return response()->json(['amortization_schedule' => $amortizationSchedule], 200);
     }
 
+    /**
+     * Generate the amortization schedule data for a mortgage loan.
+     *
+     * @param  float  $loanAmount
+     * @param  float  $monthlyPayment
+     * @param  float  $annualInterestRate
+     * @param  int  $loanTerm
+     * @return array
+     */
     private function generateScheduleData($loanAmount, $monthlyPayment, $annualInterestRate, $loanTerm)
     {
         $monthlyInterestRate = ($annualInterestRate / 12) / 100;
@@ -96,6 +125,12 @@ class LoanController extends Controller
         return $schedule;
     }
 
+    /**
+     * Generate the extra repayment schedule for a mortgage loan.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function generateExtraRepaymentSchedule(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -128,6 +163,16 @@ class LoanController extends Controller
         return response()->json(['extra_repayment_schedule' => $extraRepaymentSchedule], 200);
     }
 
+    /**
+     * Generate the extra repayment schedule data for a mortgage loan.
+     *
+     * @param  float  $loanAmount
+     * @param  float  $monthlyPayment
+     * @param  float  $annualInterestRate
+     * @param  int  $loanTerm
+     * @param  float  $extraRepaymentAmount
+     * @return array
+     */
     private function generateExtraRepaymentScheduleData($loanAmount, $monthlyPayment, $annualInterestRate, $loanTerm, $extraRepaymentAmount)
     {
         $monthlyInterestRate = ($annualInterestRate / 12) / 100;
@@ -136,20 +181,16 @@ class LoanController extends Controller
         $remainingLoanTerm = $numberOfMonths;
         $extraRepaymentSchedule = [];
 
-        
-
         for ($month = 1; $month <= $numberOfMonths; $month++) {
-            // for the last month
+            // For the last month, adjust the monthly payment to ensure the loan is fully paid off.
             $monthlyPayment = min($monthlyPayment, $startingBalance);
 
             $monthlyInterest = $startingBalance * $monthlyInterestRate;
             $principalComponent = $monthlyPayment - $monthlyInterest;
-            // dd($extraRepaymentAmount);
+
             if ($extraRepaymentAmount > 0) {
                 $remainingLoanTermAfterExtraRepayment = $remainingLoanTerm - 1;
-                // $principalComponent += $extraRepaymentAmount;
                 $endingBalanceAfterExtraRepayment = max($startingBalance - $principalComponent - $extraRepaymentAmount, 0);
-
             } else {
                 $endingBalanceAfterExtraRepayment = $startingBalance;
                 $remainingLoanTermAfterExtraRepayment = $remainingLoanTerm;
@@ -167,20 +208,29 @@ class LoanController extends Controller
             ];
 
             $startingBalance = $endingBalanceAfterExtraRepayment;
-            if ($endingBalanceAfterExtraRepayment <= 1) {
+
+            // If the loan is paid off, break the loop to avoid unnecessary iterations.
+            if ($endingBalanceAfterExtraRepayment <= 0) {
                 break;
             }
+
             $remainingLoanTerm--;
         }
 
         return $extraRepaymentSchedule;
     }
 
+    /**
+     * Store the schedule data in the database.
+     *
+     * @param  string  $tableName
+     * @param  array  $schedule
+     * @return void
+     */
     private function storeSchedule($tableName, $schedule)
     {
-        // Store the schedule data in the database
-        // Using a transaction to ensure data integrity
         try {
+            // Using a transaction to ensure data integrity
             DB::beginTransaction();
             DB::table($tableName)->insert($schedule);
             DB::commit();
@@ -190,17 +240,36 @@ class LoanController extends Controller
         }
     }
 
+    /**
+     * Show the loan input form.
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
     public function showLoanInputForm()
     {
         return view('loan_input_form');
     }
 
-    private function calculateEffectiveInterestRate($annualInterestRate, $numberOfCompoundingPeriodsPerYear) {
+    /**
+     * Calculate the effective interest rate for a mortgage loan.
+     *
+     * @param  float  $annualInterestRate
+     * @param  int  $numberOfCompoundingPeriodsPerYear
+     * @return float
+     */
+    private function calculateEffectiveInterestRate($annualInterestRate, $numberOfCompoundingPeriodsPerYear)
+    {
         $monthlyInterestRate = $annualInterestRate / $numberOfCompoundingPeriodsPerYear;
         $effectiveInterestRate = pow(1 + $monthlyInterestRate, $numberOfCompoundingPeriodsPerYear) - 1;
         return $effectiveInterestRate * 100; // Convert to percentage
     }
 
+    /**
+     * Show the amortization and extra repayment schedule for a mortgage loan.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Contracts\View\View
+     */
     public function showAmortizationAndExtraRepaymentSchedule(Request $request)
     {
         // Validate the input data (similar to the previous methods)
@@ -228,7 +297,7 @@ class LoanController extends Controller
             $request->input('loan_term') * 12
         );
 
-
+        // Calculate the Monthly Payment
         $monthlyPayment = $this->calculateMonthlyPaymentAmount(
             $request->input('loan_amount'),
             $request->input('annual_interest_rate'),
